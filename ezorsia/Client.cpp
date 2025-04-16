@@ -1,7 +1,7 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "AddyLocations.h"
 #include "codecaves.h"
-#include "FixIme.h"
+#include "ConvertUTF8.h"
 #include "FixBuddy.h"
 
 int Client::m_nGameHeight = 720;
@@ -23,7 +23,6 @@ bool Client::noPassword = false;
 bool Client::debug = false;
 bool Client::climbSpeedAuto = false;
 float Client::climbSpeed = 1.0;
-unsigned char Client::imeType = 1;
 std::string Client::ServerIP_AddressFromINI = "127.0.0.1";
 int Client::serverIP_Port = 8484;
 bool Client::talkRepeat = false;
@@ -132,26 +131,26 @@ void Client::UpdateGameStartup() {
 	Memory::WriteString(0x00AFE084, serverIP_Address);//write the user-set IP address
 	Memory::WriteString(0x00AFE084 + 16, serverIP_Address);//write the user-set IP address
 	Memory::WriteString(0x00AFE084 + 32, serverIP_Address);//write the user-set IP address
-	Memory::WriteInt(0x007519C1 + 1, serverIP_Port);//µÇÂ¼¶Ë¿Ú
+	Memory::WriteInt(0x007519C1 + 1, serverIP_Port);//ç™»å½•ç«¯å£
 
 	//optional non-resolution related stuff
 	if (useTubi) { Memory::FillBytes(0x00485C32, 0x90, 2); }
 
-	Memory::WriteInt(0x0077E055 + 1, 2147483646); // Îï¹¥PAD Ïà¹Ø¾ßÌå²»Ã÷£¬Ä¬ÈÏÖµ1999£¬int 4×Ö½Ú
-	Memory::WriteInt(0x0077E12F + 1, 2147483646); // ¼¼ÄÜ Ïà¹Ø¾ßÌå²»Ã÷£¬Ä¬ÈÏÖµ1999£¬int 4×Ö½Ú
-	Memory::WriteInt(0x008C3304 + 1, setDamageCap); // Îï¹¥Ãæ°å£¬Ä¬ÈÏÖµ199999£¬int 4×Ö½Ú
-	Memory::WriteInt(0x0077E215 + 1, setMAtkCap); // Ä§¹¥Ãæ°å£¬int 4×Ö½Ú
-	Memory::WriteInt(0x00780620 + 1, setMAtkCap); // Ä§¹¥Ãæ°å£¬int 4×Ö½Ú
-	Memory::WriteInt(0x007806D0 + 1, setAccCap); // ÃüÖĞ£¬Ä¬ÈÏ999
-	Memory::WriteInt(0x00780702 + 1, setAvdCap); // »Ø±Ü£¬Ä¬ÈÏ999
-	Memory::WriteInt(0x0078FF5F + 1, 2147483646); // ¼ÆËãÎïÀíÉËº¦Ïà¹Ø£¬ÒâÒå²»Ã÷£¬Ä¬ÈÏ1999£¬int 4×Ö½Ú
-	Memory::WriteInt(0x0079166C + 1, 2147483646); // ¼ÆËãÄ§¹¥MDamageµÄ£¬Ä¬ÈÏÖµ1999£¬int 4×Ö½Ú£¬×¢Òâ£ºÕâÀï²»¸ÄµÄ»°£¬´ò¹ÖÊä³ö¼ÆËãµÄÄ§·¨ÉËº¦¾ÍÊÇ°´1999¼ÆËãµÄ
-	Memory::WriteInt(0x00791CD5 + 1, 2147483646); // ¼ÆËãÄ§¹¥MDamageµÄ£¬Ä¬ÈÏÖµ1999£¬int 4×Ö½Ú£¬×¢Òâ£ºÕâÀï²»¸ÄËÆºõÒ²²»Ó°ÏìÊä³ö¼ÆËã
-	Memory::WriteInt(0x0078E061 + 1, 2147483646); //CalcDamage::PDamage 999£¬ÒâÒå²»Ã÷£¬int 4×Ö½Ú
-	Memory::WriteInt(0x0078E67D + 1, 2147483646); //CalcDamage::PDamage 999£¬ÒâÒå²»Ã÷£¬int 4×Ö½Ú
-	Memory::WriteInt(0x007918FC + 1, 2147483646); //CalcDamage::MDamage 999£¬ÒâÒå²»Ã÷£¬int 4×Ö½Ú
+	Memory::WriteInt(0x0077E055 + 1, 2147483646); // ç‰©æ”»PAD ç›¸å…³å…·ä½“ä¸æ˜ï¼Œé»˜è®¤å€¼1999ï¼Œint 4å­—èŠ‚
+	Memory::WriteInt(0x0077E12F + 1, 2147483646); // æŠ€èƒ½ ç›¸å…³å…·ä½“ä¸æ˜ï¼Œé»˜è®¤å€¼1999ï¼Œint 4å­—èŠ‚
+	Memory::WriteInt(0x008C3304 + 1, setDamageCap); // ç‰©æ”»é¢æ¿ï¼Œé»˜è®¤å€¼199999ï¼Œint 4å­—èŠ‚
+	Memory::WriteInt(0x0077E215 + 1, setMAtkCap); // é­”æ”»é¢æ¿ï¼Œint 4å­—èŠ‚
+	Memory::WriteInt(0x00780620 + 1, setMAtkCap); // é­”æ”»é¢æ¿ï¼Œint 4å­—èŠ‚
+	Memory::WriteInt(0x007806D0 + 1, setAccCap); // å‘½ä¸­ï¼Œé»˜è®¤999
+	Memory::WriteInt(0x00780702 + 1, setAvdCap); // å›é¿ï¼Œé»˜è®¤999
+	Memory::WriteInt(0x0078FF5F + 1, 2147483646); // è®¡ç®—ç‰©ç†ä¼¤å®³ç›¸å…³ï¼Œæ„ä¹‰ä¸æ˜ï¼Œé»˜è®¤1999ï¼Œint 4å­—èŠ‚
+	Memory::WriteInt(0x0079166C + 1, 2147483646); // è®¡ç®—é­”æ”»MDamageçš„ï¼Œé»˜è®¤å€¼1999ï¼Œint 4å­—èŠ‚ï¼Œæ³¨æ„ï¼šè¿™é‡Œä¸æ”¹çš„è¯ï¼Œæ‰“æ€ªè¾“å‡ºè®¡ç®—çš„é­”æ³•ä¼¤å®³å°±æ˜¯æŒ‰1999è®¡ç®—çš„
+	Memory::WriteInt(0x00791CD5 + 1, 2147483646); // è®¡ç®—é­”æ”»MDamageçš„ï¼Œé»˜è®¤å€¼1999ï¼Œint 4å­—èŠ‚ï¼Œæ³¨æ„ï¼šè¿™é‡Œä¸æ”¹ä¼¼ä¹ä¹Ÿä¸å½±å“è¾“å‡ºè®¡ç®—
+	Memory::WriteInt(0x0078E061 + 1, 2147483646); //CalcDamage::PDamage 999ï¼Œæ„ä¹‰ä¸æ˜ï¼Œint 4å­—èŠ‚
+	Memory::WriteInt(0x0078E67D + 1, 2147483646); //CalcDamage::PDamage 999ï¼Œæ„ä¹‰ä¸æ˜ï¼Œint 4å­—èŠ‚
+	Memory::WriteInt(0x007918FC + 1, 2147483646); //CalcDamage::MDamage 999ï¼Œæ„ä¹‰ä¸æ˜ï¼Œint 4å­—èŠ‚
 
-	Memory::WriteDouble(0x00AFE8A0, setAtkOutCap);	// Êä³öÏÔÊ¾ÉÏÏŞ£¬Ä¬ÈÏ199999£¬double 8×Ö½Ú
+	Memory::WriteDouble(0x00AFE8A0, setAtkOutCap);	// è¾“å‡ºæ˜¾ç¤ºä¸Šé™ï¼Œé»˜è®¤199999ï¼Œdouble 8å­—èŠ‚
 
 
 	Memory::WriteInt(0x00780743 + 3, speedMovementCap); //set speed cap //ty ronan
@@ -348,7 +347,7 @@ void Client::UpdateResolution() {
 	Memory::WriteInt(0x008DEB93 + 1, m_nGameHeight - 20);	//push 580
 	Memory::WriteInt(0x008DEE2F + 1, m_nGameHeight - 20);	//push 580
 	Memory::WriteInt(0x008D2765 + 1, m_nGameHeight - 19);	//push 581
-	Memory::WriteInt(0x008DA11C + 1, m_nGameHeight - 19);	//push 581 ÁÙÊ±¾­ÑéÌõ
+	Memory::WriteInt(0x008DA11C + 1, m_nGameHeight - 19);	//push 581 ä¸´æ—¶ç»éªŒæ¡
 	Memory::WriteInt(0x008D29B4 + 1, m_nGameHeight - 19);	//push 581
 	Memory::WriteInt(0x008D8BFE + 1, m_nGameHeight - 19);	//push 581
 	Memory::WriteInt(0x008D937E + 1, m_nGameHeight - 19);	//push 581 //008D9373  move mana bar outline? //ty rynyan
@@ -520,7 +519,7 @@ void Client::UpdateResolution() {
 
 	Memory::WriteInt(0x0052418C + 1, m_nGameHeight - 102 - 10);//party quest available pop-up y axis		my first address find own my own
 
-	Memory::WriteInt(0x00523092 + 1, 423);// ½»Ò×ÉêÇëÆøÅİx×ø±ê
+	Memory::WriteInt(0x00523092 + 1, 423);// äº¤æ˜“ç”³è¯·æ°”æ³¡xåæ ‡
 	Memory::WriteInt(0x0052336D + 1, m_nGameWidth - 942 + 26 + 37 + 62);//various requests like party, guild, friend, family, invites that pop up //Party Invite
 	Memory::WriteInt(0x00522E79 + 1, m_nGameWidth - 942 + 26 + 37 + 62);//various requests like party, guild, friend, family, invites that pop up //friend request
 	Memory::WriteInt(0x00522C87 + 1, m_nGameWidth - 942 + 26 + 37 + 62);//various requests like party, guild, friend, family, invites that pop up	// Guild Invite
@@ -565,7 +564,7 @@ void Client::UpdateResolution() {
 	myHeight = (Client::m_nGameHeight - 600) / 2;//cash shop fix for frame area	//recalc offsets
 	myWidth = (Client::m_nGameWidth - 800) / 2;//cash shop fix for frame area		//recalc offsets
 	
-	// ÏÖ½ğÉÌ³Ç¾ÓÖĞ
+	// ç°é‡‘å•†åŸå±…ä¸­
 	nHeightOfsetted1 = 316; nWidthOfsetted1 = 256; nTopOfsetted1 = 0 + myHeight; nLeftOfsetted1 = 0 + myWidth; //parameters for fix1
 	Memory::CodeCave(CashShopFix1, dwCashFix1, dwCashFix1NOPs);
 	nHeightOfsetted2 = 104; nWidthOfsetted2 = 256; nTopOfsetted2 = 318 + myHeight; nLeftOfsetted2 = -1 + myWidth; //parameters for fix2
@@ -588,7 +587,7 @@ void Client::UpdateResolution() {
 	nHeightOfsettedPrev = 165 + myHeight; nWidthOfsettedPrev = 212 + myWidth; nTopOfsettedPrev = 40 + myHeight; nLeftOfsettedPrev = 24 + myWidth; //parameters for fix cash preview
 	Memory::CodeCave(CashShopFixPrev, dwCashFixPrev, dwCashFixPrevNOPs); //cash shop preview fix
 
-	// ½»Ò×ÖĞĞÄ¾ÓÖĞ
+	// äº¤æ˜“ä¸­å¿ƒå±…ä¸­
 	iHeightOfsetted1 = 200; iWidthOfsetted1 = 256; iTopOfsetted1 = 0 + myHeight; iLeftOfsetted1 = 0 + myWidth;
 	Memory::CodeCave(ITCFix1, 0x0059E9E1, 12);
 	iHeightOfsetted2 = 110; iWidthOfsetted2 = 256; iTopOfsetted2 = 200 + myHeight; iLeftOfsetted2 = -1 + myWidth;
@@ -733,29 +732,30 @@ void Client::FixMouseWheel() {
 }
 
 void Client::Chinese() {
-	if (Client::imeType == 0)
-	{
-		FixIme::HookOld();
-	}
-	else {
-		FixIme::HookNew();
-	}
+	// ä¿®æ­£ Big5 éƒ¨åˆ†äº‚ç¢¼ã€ç›´æ¥å¾ Imm32 èª¿ç”¨ IME
+	ConvertUTF8::Hook();
 
 	FixBuddy::Hook();
 	if(SwitchChinese) {
-		// ÁÄÌìÀ¸Ñ¡Ïî
-		Memory::WriteString(0x00AF2B28, "¶ÔÁªÃË     ");
+		// èŠå¤©æ é€‰é¡¹
+		Memory::WriteString(0x00AF2B28, "å°è¯ç›Ÿ     ");
 
-		// ÓĞĞ§ÆÚ×ÖÌå´óĞ¡
+		// æœ‰æ•ˆæœŸå­—ä½“å¤§å°
 		Memory::WriteByte(0x008E55ED + 1, 0x0B);
 
-		// ÊôĞÔÎ»ÖÃ×ÖÌå´óĞ¡
+		// å±æ€§ä½ç½®å­—ä½“å¤§å°
 		Memory::WriteByte(0x008E557A + 1, 0x0B);
 		Memory::WriteByte(0x008E565E + 1, 0x0B);
 
-		// Íæ¼ÒÃûÆ¬ Ö°Òµ×ÖÌå´óĞ¡ºÍÎ»ÖÃ
-		Memory::WriteByte(0x0090142E + 1, 0x5E); // 60->5E Î»ÖÃÉÏÒÆ
-		Memory::WriteByte(0x00901400 + 1, 1); // ×ÖÌåtype¸ÄÎª1 ¶ÔÓ¦12ºÅ´óĞ¡
+		// ç©å®¶åç‰‡ èŒä¸šå­—ä½“å¤§å°å’Œä½ç½®
+		Memory::WriteByte(0x0090142E + 1, 0x5E); // 60->5E ä½ç½®ä¸Šç§»
+		Memory::WriteByte(0x00901400 + 1, 1); // å­—ä½“typeæ”¹ä¸º1 å¯¹åº”12å·å¤§å°
+
+		// ä¿®æ­£ç‰©å“èªªæ˜æ›è¡Œ
+		Memory::PatchNop(0x008E4252, 2);
+
+		// ä¿®æ­£æŠ€èƒ½èªªæ˜æ›è¡Œ
+		Memory::CodeCave(skillToolTip, 0x008F383E, 6);
 	}
 }
 
@@ -834,7 +834,6 @@ void Client::LongQuickSlot() {
 	Memory::WriteByte(0x00836A1E + 1, 0x68); // push 68h (triple)
 	Memory::WriteByte(0x00836A21 + 2, 0x6C); // triple the base value at this hex (old->24h)
 
-
 	// CODECAVES CLIENT EDITS ---- 
 	Memory::CodeCave(CompareValidateFuncKeyMappedInfo_cave, 0x8DD8B8, 5);
 	Memory::CodeCave(sub_9FA0CB_cave, 0x9FA0DB, 5);
@@ -862,7 +861,6 @@ void Client::FixItemType() {
 }
 
 DWORD Client::jumpCap = 123;
-
 void Client::JumpCap() {
 	Memory::CodeCave(customJumpCapHook1, 0x00780797, 10);
 	Memory::CodeCave(customJumpCapHook2, 0x008C42A3, 10);
@@ -880,10 +878,7 @@ void Client::JumpCap() {
 }
 
 void Client::FixChatPosHook() {
-	// ĞŞ¸´ÁÄÌì´°ÀïµÄÁÄÌìĞÅÏ¢Æ«ÏÂµÄÎÊÌâ
-	// Memory::WriteByte(0x008DD05A + 2, 0x4);
-	// Memory::WriteByte(0x008DD067 + 2, 0x3);
-	// ÀÏ·½·¨µ¼ÖÂÊÕÆğÁÄÌì¿òÊ±£¬ÏÔÊ¾µÄĞÅÏ¢Ì«Æ«ÏÂÁË
+	// ä¿®å¤èŠå¤©çª—é‡Œçš„èŠå¤©ä¿¡æ¯åä¸‹çš„é—®é¢˜
 	Memory::CodeCave(chatTextPos, 0x008DD06F, 6);
 }
 
@@ -895,14 +890,15 @@ void Client::NoPassword() {
 }
 
 void Client::MoreHook() {
-	Memory::WriteInt(0x009A3D81, 480);
-	Memory::WriteByte(0x008EC4A7 + 1, 0x23);//×°±¸ÊôĞÔÒ³ÃæµÄÖ°ÒµĞèÇóÆ«ÒÆÕ½Ê¿
-	Memory::WriteByte(0x008EC53C + 1, 0x4D);//Ä§·¨Ê¦
-	Memory::WriteByte(0x008EC5D1 + 1, 0x7A);//¹­¼ıÊÖ
-	Memory::WriteByte(0x008EC660 + 1, 0xA9);//·ÉÏÀ
-	Memory::WriteByte(0x008EC6CF + 1, 0xC8);//º£µÁ
-	Memory::CodeCave(faceHairCave, 0x005C94F3, 18);
-	Memory::CodeCave(canSendPkgTimeCave, 0x00485C28, 10);
+	//è£å‚™å±¬æ€§é é¢çš„è·æ¥­éœ€æ±‚é¡¯ç¤ºèª¿æ•´
+	//Memory::WriteInt(0x009A3D81, 480);
+	//Memory::WriteByte(0x008EC4A7 + 1, 0x23);//æˆ°å£«
+	//Memory::WriteByte(0x008EC53C + 1, 0x4D);//æ³•å¸«
+	//Memory::WriteByte(0x008EC5D1 + 1, 0x7A);//å¼“ç®­æ‰‹
+	//Memory::WriteByte(0x008EC660 + 1, 0xA9);//ç›œè³Š
+	//Memory::WriteByte(0x008EC6CF + 1, 0xC8);//æµ·ç›—
+	//Memory::CodeCave(faceHairCave, 0x005C94F3, 18);
+	//Memory::CodeCave(canSendPkgTimeCave, 0x00485C28, 10);
 
 	if (talkRepeat)
 	{
@@ -912,35 +908,51 @@ void Client::MoreHook() {
 
 	if (setAtkOutCap > 999999)
 	{
-		Memory::WriteInt(0x008C485A + 1, 192); // Ãæ°å¹Ø±Õ°´Å¥x
-		Memory::WriteInt(0x008C4AB3 + 1, 210); // Ãæ°å¿í¶È
-		Memory::WriteInt(0x008C510A + 1, 218); // ÏêÇéÃæ°å¿í¶È
-		Memory::WriteInt(0x008C4EA2 + 1, 210); // ÏêÇéÃæ°å³õÊ¼x
-		Memory::WriteInt(0x008C5760 + 1, 210); // ÏêÇéÃæ°åÇĞ»»x
-		Memory::WriteInt(0x008C7AD9 + 1, 185); // ¼ÓÊôĞÔ°´Å¥x
-		Memory::WriteInt(0x008C2754 + 1, 195); // ÏêÇéÃæ°å¹Ø±Õ°´Å¥x
-		Memory::WriteInt(0x008C6C72 + 1, 210); // ÒÆ¶¯Ê±ÏêÇéÃæ°åx
-		Memory::CodeCave(apDetailBtn, 0x008C4E1B, 7); // ÏêÇé°´Å¥
+		Memory::WriteInt(0x008C485A + 1, 192); // é¢æ¿å…³é—­æŒ‰é’®x
+		Memory::WriteInt(0x008C4AB3 + 1, 210); // é¢æ¿å®½åº¦
+		Memory::WriteInt(0x008C510A + 1, 218); // è¯¦æƒ…é¢æ¿å®½åº¦
+		Memory::WriteInt(0x008C4EA2 + 1, 210); // è¯¦æƒ…é¢æ¿åˆå§‹x
+		Memory::WriteInt(0x008C5760 + 1, 210); // è¯¦æƒ…é¢æ¿åˆ‡æ¢x
+		Memory::WriteInt(0x008C7AD9 + 1, 185); // åŠ å±æ€§æŒ‰é’®x
+		Memory::WriteInt(0x008C2754 + 1, 195); // è¯¦æƒ…é¢æ¿å…³é—­æŒ‰é’®x
+		Memory::WriteInt(0x008C6C72 + 1, 210); // ç§»åŠ¨æ—¶è¯¦æƒ…é¢æ¿x
+		Memory::CodeCave(apDetailBtn, 0x008C4E1B, 7); // è¯¦æƒ…æŒ‰é’®
 	}
-	// À®°È
+	// å–‡å­
 	Memory::WriteInt(0x0045A5BE + 1, 9999);
 
+	// çª—å£ä¿å­˜ä½ç½®
+	Memory::WriteInt(0x0049D218 + 1, m_nGameWidth - 16);// çª—å£ä¿å­˜ä½ç½®è¾¹ç•Œ x
+	Memory::WriteInt(0x0049D268 + 1, m_nGameHeight - 16);// çª—å£ä¿å­˜ä½ç½®è¾¹ç•Œ y
 
-	// ´°¿Ú±£´æÎ»ÖÃ
-	Memory::WriteInt(0x0049D218 + 1, m_nGameWidth - 16);// ´°¿Ú±£´æÎ»ÖÃ±ß½ç x
-	Memory::WriteInt(0x0049D268 + 1, m_nGameHeight - 16);// ´°¿Ú±£´æÎ»ÖÃ±ß½ç y
+	// Unlimited Flash Jump
+	Memory::PatchNop(0x095071D, 2);
+	Memory::PatchNop(0x096BF91, 6);
+	Memory::PatchNop(0x096BF1B, 2);
+
+	// ç©ºä¸­ç¬ç§»
+	Memory::FillBytes(0x00957C2D, 0x90, 6);
+
+	// ç§»é™¤æº¢å‡ºç­‰ç´šæª¢æŸ¥ Lacking Level Check Removal
+	Memory::WriteByte(0x008AD01A, 0xE9);
+	Memory::WriteInt(0x008AD01A + 1, 0x008AD227 - (0x008AD01A + 5));
+
+	// æ€ªç‰©åœ–é‘‘å°é¢ä¿®æ­£
+	Memory::WriteByte(0x0086425B + 1, 82);
+	Memory::CodeCave(mbpos1, 0x00864378, 5);
+	Memory::CodeCave(mbpos2, 0x00864495, 5);
+	Memory::CodeCave(mbpos3, 0x008645B4, 5);
+	Memory::WriteInt(0x008646B8 + 1, 221);
 }
 
 void Client::WorldMap()
 {
-
-	//½â³ıÊÀ½ç´óµØÍ¼ÏŞÖÆ
-	// WorldMap Cap Increase
+	// è§£é™¤å¤§åœ°åœ–é™åˆ¶
 	Memory::WriteByteArray(0x009EA030, world_cap_increase_array, sizeof(world_cap_increase_array));
 	//Memory::WriteByte(0x009EA032, 0xFF);//map
 	Memory::WriteInt(0x009EA030 + 2, 0xB4);
 
-	// ´óµØÍ¼¾ÓÖĞ
+	// å¤§åœ°å›¾å±…ä¸­
 	wordMapX = (m_nGameWidth - 666) / 2;
 	wordMapY = (m_nGameHeight - 524) / 2;
 	Memory::CodeCave(wordMapUIcc, 0x009EB594, 13);

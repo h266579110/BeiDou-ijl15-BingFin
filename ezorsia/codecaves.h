@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 int nStatusBarY = 0;
 __declspec(naked) void AdjustStatusBar() {
 	__asm {
@@ -995,7 +995,7 @@ __declspec(naked) void fixMouseWheelHook() {
 	}
 }
 
-// ARRAYS ---- ³¤¼üÅÌ¿ªÊ¼
+// ARRAYS ---- é•¿é”®ç›˜å¼€å§‹
 unsigned char Array_aDefaultQKM[] = {
 	42, 0, 0, 0,
 	82, 0, 0, 0,
@@ -1315,7 +1315,7 @@ _declspec(naked) void Restore_Array_Expanded() //Thank you Max
 		ret;
 	}
 }
-// ³¤¼üÅÌ½áÊø
+// é•¿é”®ç›˜ç»“æŸ
 
 
 DWORD fixDateFormatRtnAddr = 0x008EBF65;
@@ -1454,14 +1454,14 @@ __declspec(naked) void chatTextPos()
 		cmp[edi + 0D00h], 2
 		jz label_type2
 
-		label_type1 :        // ×´Ì¬1 ÊÕËõ
+		label_type1 :        // çŠ¶æ€1 æ”¶ç¼©
 		sub eax, 1
 		jmp label_rtn
 
-		label_type2 :        // ×´Ì¬2 ÊÕËõ + ÊäÈë
+		label_type2 :        // çŠ¶æ€2 æ”¶ç¼© + è¾“å…¥
 		jmp label_rtn
 
-		label_type3 :        // ×´Ì¬3 Õ¹¿ª
+		label_type3 :        // çŠ¶æ€3 å±•å¼€
 		sub eax, 2
 
 		label_rtn :
@@ -1591,5 +1591,80 @@ __declspec(naked) void wordMapUIcc()
 		push wordMapY
 		push wordMapX
 		jmp wordMapUIccRtn
+	}
+}
+
+int charLen = 55;
+void calcCharLen(const char* word)
+{
+	const std::string str = std::string(word);
+	auto firstByte = static_cast<unsigned char>(str[0]);
+
+	if (str.length() < 55)
+	{
+		charLen = 55;
+		return;
+	}
+	for (int i = 0; i < 60; i++)
+	{
+		firstByte = static_cast<unsigned char>(str[i]);
+		if (firstByte >= 0x81 && firstByte <= 0xFE)
+		{
+			i++;
+			continue;
+		}
+		if (i >= 55)
+		{
+			charLen = i;
+			break;
+		}
+	}
+}
+
+constexpr DWORD skillToolTipNewRtn = 0x008F3844;
+__declspec(naked) void skillToolTip()
+{
+	__asm {
+		mov eax, [ebp + 0Ch]
+		push eax
+		call calcCharLen
+		pop eax
+		mov eax, charLen
+		mov[ebp - 1Ch], eax
+		lea eax, [ebp - 30h]
+		jmp skillToolTipNewRtn
+	}
+}
+
+const DWORD mbpos1Rtn = 0x0086437D;
+__declspec(naked) void mbpos1()
+{
+	__asm {
+		push 133
+		sub eax, edi
+		push eax
+		jmp mbpos1Rtn
+	}
+}
+
+const DWORD mbpos2Rtn = 0x0086449A;
+__declspec(naked) void mbpos2()
+{
+	__asm {
+		push 165
+		sub eax, edi
+		push eax
+		jmp mbpos2Rtn
+	}
+}
+
+const DWORD mbpos3Rtn = 0x008645B9;
+__declspec(naked) void mbpos3()
+{
+	__asm {
+		push 186
+		sub eax, edi
+		push eax
+		jmp mbpos3Rtn
 	}
 }

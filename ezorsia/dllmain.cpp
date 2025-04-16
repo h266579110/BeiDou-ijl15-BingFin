@@ -29,11 +29,11 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 			Client::WindowedMode = reader.GetBoolean("general", "WindowedMode", true);
 			Client::RemoveLogos = reader.GetBoolean("general", "RemoveLogos", true);
 			Memory::UseVirtuProtect = reader.GetBoolean("general", "UseVirtuProtect", true);
-			Client::setDamageCap = reader.GetReal("optional", "setDamageCap", 199999);
-			Client::setMAtkCap = reader.GetReal("optional", "setMAtkCap", 1999);
-			Client::setAccCap = reader.GetReal("optional", "setAccCap", 999);
-			Client::setAvdCap = reader.GetReal("optional", "setAvdCap", 999);
-			Client::setAtkOutCap = reader.GetReal("optional", "setAtkOutCap", 199999);
+			Client::setDamageCap = reader.GetInteger("optional", "setDamageCap", 199999);
+			Client::setMAtkCap = reader.GetInteger("optional", "setMAtkCap", 1999);
+			Client::setAccCap = reader.GetInteger("optional", "setAccCap", 999);
+			Client::setAvdCap = reader.GetInteger("optional", "setAvdCap", 999);
+			Client::setAtkOutCap = reader.GetInteger("optional", "setAtkOutCap", 199999);
 			Client::useTubi = reader.GetBoolean("optional", "useTubi", false);
 			Client::bigLoginFrame = reader.GetBoolean("general", "bigLoginFrame", false);
 			Client::SwitchChinese = reader.GetBoolean("general", "SwitchChinese", false);
@@ -41,7 +41,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 			Client::jumpCap = reader.GetInteger("optional", "jumpCap", 123);
 			Client::debug = reader.GetBoolean("debug", "debug", false);
 			Client::noPassword = reader.GetBoolean("debug", "noPassword", false);
-			Client::imeType = reader.GetInteger("general", "imeType", 1);
 			ownLoginFrame = reader.GetBoolean("optional", "ownLoginFrame", false);
 			ownCashShopFrame = reader.GetBoolean("optional", "ownCashShopFrame", false);
 			EzorsiaV2WzIncluded = reader.GetBoolean("general", "EzorsiaV2WzIncluded", true);

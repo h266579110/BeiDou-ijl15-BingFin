@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "Memory.h"
 #include "detours.h"
 
@@ -41,8 +41,8 @@ void Memory::FillBytes(const DWORD dwOriginAddress, const unsigned char ucValue,
 }
 
 /*
- ×¢Òâ: Ô­ÎÄ±¾³¤¶È>=ÐÂÎÄ±¾³¤¶È
- Ê¾Àý: Memory::ReplaceString(0x00B3C158, "Ë«»÷·¢ËÍÏûÏ¢", "Double-click to send a note.");
+ æ³¨æ„: åŽŸæ–‡æœ¬é•¿åº¦>=æ–°æ–‡æœ¬é•¿åº¦
+ ç¤ºä¾‹: Memory::ReplaceString(0x00B3C158, "åŒå‡»å‘é€æ¶ˆæ¯", "Double-click to send a note.");
 */
 void Memory::ReplaceString(const DWORD dwOriginAddress, const char* sContent, const char* oContent)
 {
@@ -53,8 +53,8 @@ void Memory::ReplaceString(const DWORD dwOriginAddress, const char* sContent, co
 }
 
 /*
-oSize: ÒªÌî³äµÄ³¤¶È£¬>=Ìî³äµÄ×Ö·û´®³¤¶È£¬ÖÐÎÄ=2¸ö³¤¶È
-Ê¾Àý: Memory::WriteString(0x00AF2B28, "¶ÔÁªÃË", 11);
+oSize: è¦å¡«å……çš„é•¿åº¦ï¼Œ>=å¡«å……çš„å­—ç¬¦ä¸²é•¿åº¦ï¼Œä¸­æ–‡=2ä¸ªé•¿åº¦
+ç¤ºä¾‹: Memory::WriteString(0x00AF2B28, "å¯¹è”ç›Ÿ", 11);
 */
 void Memory::WriteString(const DWORD dwOriginAddress, const char* sContent, const int oSize)
 {
@@ -135,4 +135,27 @@ void Memory::CodeCave(void* ptrCodeCave, const DWORD dwOriginAddress, const int 
 		WriteByte(dwOriginAddress, 0xe9); // jmp instruction
 		WriteInt(dwOriginAddress + 1, (int)(((int)ptrCodeCave - (int)dwOriginAddress) - 5)); // [jmp(1 byte)][address(4 bytes)] //this means you need to clear a space of at least 5 bytes (nNOPCount bytes)
 	} __except (EXCEPTION_EXECUTE_HANDLER) {}
+}
+
+void Memory::PatchNop(const DWORD dwOriginAddress, const int nCount) {
+    FillBytes(dwOriginAddress, 0x90, nCount);
+}
+
+DWORD Memory::GetFunctionAddress(LPCSTR lpModule, LPCSTR lpFunc) {
+    HMODULE library = LoadLibraryA(lpModule);
+
+    if (!library) {
+        return 0; //cannot load library
+    }
+
+    DWORD functionAddress = (DWORD)GetProcAddress(library, lpFunc);
+
+    if (!functionAddress) {
+        return 0; //not found function address!
+    }
+
+    //Log("[MapleLog] [Tools:GetFunctionAddres] -> [0x%8X] %s:%s", functionAddress, lpModule, lpFunc);
+
+    return functionAddress;
+
 }
