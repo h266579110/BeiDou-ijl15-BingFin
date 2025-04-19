@@ -890,15 +890,17 @@ void Client::NoPassword() {
 }
 
 void Client::MoreHook() {
-	//裝備屬性頁面的職業需求顯示調整
-	//Memory::WriteInt(0x009A3D81, 480);
-	//Memory::WriteByte(0x008EC4A7 + 1, 0x23);//戰士
-	//Memory::WriteByte(0x008EC53C + 1, 0x4D);//法師
-	//Memory::WriteByte(0x008EC5D1 + 1, 0x7A);//弓箭手
-	//Memory::WriteByte(0x008EC660 + 1, 0xA9);//盜賊
-	//Memory::WriteByte(0x008EC6CF + 1, 0xC8);//海盗
-	//Memory::CodeCave(faceHairCave, 0x005C94F3, 18);
-	//Memory::CodeCave(canSendPkgTimeCave, 0x00485C28, 10);
+	//解除美髮與整形限制，可套用新版
+	Memory::CodeCave(faceHairCave, 0x005C94F3, 18);
+
+	//承上，解除NPC對話限制
+	Memory::CodeCave(faceHairCave2, 0x009ACA9B, 5);
+	Memory::CodeCave(faceHairCave3, 0x009ACAA6, 6);
+
+	//公會徽章圖案邊框修正
+	Memory::WriteByte(0x005F12EF + 2, 0x05);
+
+	Memory::CodeCave(canSendPkgTimeCave, 0x00485C28, 10);
 
 	if (talkRepeat)
 	{

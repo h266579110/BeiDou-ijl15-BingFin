@@ -1526,6 +1526,38 @@ __declspec(naked) void faceHairCave()
 	}
 }
 
+DWORD faceHairCave2Rtn = 0x009ACAA0;
+DWORD faceHairCave2Jmp = 0x009ACAA4;
+__declspec(naked) void faceHairCave2()
+{
+	__asm {
+		cmp eax, 2
+		jz label
+		cmp eax, 5
+		jz label
+		jmp faceHairCave2Jmp
+
+		label :
+		jmp faceHairCave2Rtn
+	}
+}
+
+DWORD faceHairCave3Rtn = 0x009ACAAC;
+__declspec(naked) void faceHairCave3()
+{
+	__asm {
+		cmp eax, 3
+		jz label
+		cmp eax, 4
+		jz label
+		cmp eax, 6
+
+		label:
+		setnz cl
+		jmp faceHairCave3Rtn
+	}
+}
+
 DWORD canSendPkgTimeCaveRtn = 0x00485C32;
 __declspec(naked) void canSendPkgTimeCave()
 {
@@ -1594,31 +1626,25 @@ __declspec(naked) void wordMapUIcc()
 	}
 }
 
-int charLen = 55;
+int charLen = 90;
 void calcCharLen(const char* word)
 {
-	const std::string str = std::string(word);
-	auto firstByte = static_cast<unsigned char>(str[0]);
+	const std::string str(word);
+	int width = 0, pos = 0, len = str.size();
+	while (pos < len && width < 55) {
+		unsigned char c = str[pos];
+		int bytes = 1, w = 1;
 
-	if (str.length() < 55)
-	{
-		charLen = 55;
-		return;
+		if ((c & 0xE0) == 0xC0) bytes = 2, w = 2;
+		else if ((c & 0xF0) == 0xE0) bytes = 3, w = 2;
+		else if ((c & 0xF8) == 0xF0) bytes = 4, w = 2;
+		if (width + w > 55) break;
+
+		width += w;
+		pos += bytes;
 	}
-	for (int i = 0; i < 60; i++)
-	{
-		firstByte = static_cast<unsigned char>(str[i]);
-		if (firstByte >= 0x81 && firstByte <= 0xFE)
-		{
-			i++;
-			continue;
-		}
-		if (i >= 55)
-		{
-			charLen = i;
-			break;
-		}
-	}
+
+	charLen = pos;
 }
 
 constexpr DWORD skillToolTipNewRtn = 0x008F3844;

@@ -161,9 +161,9 @@ bool ConvertUTF8::Hook()
     Memory::FillBytes(0x00937225, 0x90, 9); // Chat
     Memory::FillBytes(0x00531EE8, 0x90, 9); // Group Message
 
-    // 剪貼板支援中文
-    Memory::FillBytes(0x004CAE7D, 0x90, 2);
-    Memory::WriteByte(0x004CAE8F, 0xEB);
+    // 剪貼板支援中文(Big5)
+    //Memory::FillBytes(0x004CAE7D, 0x90, 2);
+    //Memory::WriteByte(0x004CAE8F, 0xEB);
 
     // 角色名中文檢查
     Memory::FillBytes(0x007A015D, 0x90, 2);
