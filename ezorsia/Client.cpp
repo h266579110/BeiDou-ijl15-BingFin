@@ -703,7 +703,8 @@ void Client::UpdateResolution() {
 	Memory::CodeCave(darkMap3cc, 0x0055C1C5, 13);
 }
 
-void Client::EnableNewIGCipher() {//??not called //no idea what cipher is
+//??not called //no idea what cipher is
+void Client::EnableNewIGCipher() {
 	const int nCipherHash = m_nIGCipherHash;
 	Memory::WriteInt(dwIGCipherHash + 3, nCipherHash);
 	Memory::WriteInt(dwIGCipherVirtual1 + 3, nCipherHash);
@@ -712,7 +713,8 @@ void Client::EnableNewIGCipher() {//??not called //no idea what cipher is
 	Memory::WriteInt(dwIGCipherDecryptStr + 3, nCipherHash);
 }
 
-void Client::UpdateLogin() {	//un-used //may still contain some useful addresses for custom login
+//unused //may still contain some useful addresses for custom login
+void Client::UpdateLogin() {	
 	Memory::CodeCave(PositionLoginDlg, dwLoginCreateDlg, 14);
 	Memory::CodeCave(PositionLoginUsername, dwLoginUsername, 11);
 	Memory::CodeCave(PositionLoginPassword, dwLoginPassword, 8);
@@ -737,19 +739,19 @@ void Client::Chinese() {
 
 	FixBuddy::Hook();
 	if(SwitchChinese) {
-		// 聊天栏选项
+		// 聊天欄選項
 		Memory::WriteString(0x00AF2B28, "對聯盟     ");
 
-		// 有效期字体大小
+		// 有效期字體大小
 		Memory::WriteByte(0x008E55ED + 1, 0x0B);
 
-		// 属性位置字体大小
+		// 属性位置字體大小
 		Memory::WriteByte(0x008E557A + 1, 0x0B);
 		Memory::WriteByte(0x008E565E + 1, 0x0B);
 
-		// 玩家名片 职业字体大小和位置
+		// 玩家名片 職業字體大小和位置
 		Memory::WriteByte(0x0090142E + 1, 0x5E); // 60->5E 位置上移
-		Memory::WriteByte(0x00901400 + 1, 1); // 字体type改为1 对应12号大小
+		Memory::WriteByte(0x00901400 + 1, 1); // 字體Type改為1 對應12號大小
 
 		// 修正物品說明換行
 		Memory::PatchNop(0x008E4252, 2);
@@ -890,50 +892,56 @@ void Client::NoPassword() {
 }
 
 void Client::MoreHook() {
-	//解除美髮與整形限制，可套用新版
+	// 解除美髮與整形限制，可套用新版
 	Memory::CodeCave(faceHairCave, 0x005C94F3, 18);
 
-	//承上，解除NPC對話限制
+	// 承上，解除NPC對話限制
 	Memory::CodeCave(faceHairCave2, 0x009ACA9B, 5);
 	Memory::CodeCave(faceHairCave3, 0x009ACAA6, 6);
 
-	//公會徽章圖案邊框修正
+	// 公會徽章圖案邊框修正
 	Memory::WriteByte(0x005F12EF + 2, 0x05);
 
-	Memory::CodeCave(canSendPkgTimeCave, 0x00485C28, 10);
+	// 未知功能
+	//Memory::CodeCave(canSendPkgTimeCave, 0x00485C28, 10);
 
-	if (talkRepeat)
-	{
+	if (talkRepeat) {
 		Memory::WriteByte(0x004905ED + 1, 5);
 	}
 	Memory::WriteInt(0x0049064B + 2, talkTime);
 
-	if (setAtkOutCap > 999999)
-	{
-		Memory::WriteInt(0x008C485A + 1, 192); // 面板关闭按钮x
-		Memory::WriteInt(0x008C4AB3 + 1, 210); // 面板宽度
-		Memory::WriteInt(0x008C510A + 1, 218); // 详情面板宽度
-		Memory::WriteInt(0x008C4EA2 + 1, 210); // 详情面板初始x
-		Memory::WriteInt(0x008C5760 + 1, 210); // 详情面板切换x
+	if (setAtkOutCap > 999999) {
+		Memory::WriteInt(0x008C485A + 1, 192); // 面板關閉按鈕x
+		Memory::WriteInt(0x008C4AB3 + 1, 210); // 面板寬度
+		Memory::WriteInt(0x008C510A + 1, 218); // 詳細面板寬度
+		Memory::WriteInt(0x008C4EA2 + 1, 210); // 詳細面板初始x
+		Memory::WriteInt(0x008C5760 + 1, 210); // 詳細面板切换x
 		Memory::WriteInt(0x008C7AD9 + 1, 185); // 加属性按钮x
-		Memory::WriteInt(0x008C2754 + 1, 195); // 详情面板关闭按钮x
-		Memory::WriteInt(0x008C6C72 + 1, 210); // 移动时详情面板x
-		Memory::CodeCave(apDetailBtn, 0x008C4E1B, 7); // 详情按钮
+		Memory::WriteInt(0x008C2754 + 1, 195); // 詳細面板關閉按鈕x
+		Memory::WriteInt(0x008C6C72 + 1, 210); // 移動時詳細面板x
+		Memory::CodeCave(apDetailBtn, 0x008C4E1B, 7); // 詳細按钮
 	}
+
 	// 喇叭
 	Memory::WriteInt(0x0045A5BE + 1, 9999);
 
-	// 窗口保存位置
-	Memory::WriteInt(0x0049D218 + 1, m_nGameWidth - 16);// 窗口保存位置边界 x
-	Memory::WriteInt(0x0049D268 + 1, m_nGameHeight - 16);// 窗口保存位置边界 y
+	// 視窗保存位置
+	Memory::WriteInt(0x0049D218 + 1, m_nGameWidth - 16);// 視窗保存位置邊界 x
+	Memory::WriteInt(0x0049D268 + 1, m_nGameHeight - 16);// 視窗保存位置邊界 y
 
-	// Unlimited Flash Jump
-	Memory::PatchNop(0x095071D, 2);
-	Memory::PatchNop(0x096BF91, 6);
-	Memory::PatchNop(0x096BF1B, 2);
+	// 連跳即自動使用二段跳
+	Memory::WriteByteArray(0x0096C073, auto_flash_jump_array, sizeof(auto_flash_jump_array));
+	Memory::SetHook(true, reinterpret_cast<void**>(&pDoActiveSkill), CUserLocal__DoActiveSkill_t);
+	Memory::SetHook(true, reinterpret_cast<void**>(&pDoJump), CUserLocal_Jump);
 
 	// 空中瞬移
 	Memory::FillBytes(0x00957C2D, 0x90, 6);
+
+	// 移除近戰距離 (如弓箭手或槍手)
+	Memory::WriteByteArray(0x009516C2, no_wack_array, sizeof(no_wack_array));
+
+	// 寵物圖層移置角色後方（但優先於NPC及怪物）
+	Memory::WriteByte(0x0070451B + 2, 1);
 
 	// 移除溢出等級檢查 Lacking Level Check Removal
 	Memory::WriteByte(0x008AD01A, 0xE9);
@@ -947,14 +955,12 @@ void Client::MoreHook() {
 	Memory::WriteInt(0x008646B8 + 1, 221);
 }
 
-void Client::WorldMap()
-{
+void Client::WorldMap() {
 	// 解除大地圖限制
 	Memory::WriteByteArray(0x009EA030, world_cap_increase_array, sizeof(world_cap_increase_array));
-	//Memory::WriteByte(0x009EA032, 0xFF);//map
 	Memory::WriteInt(0x009EA030 + 2, 0xB4);
 
-	// 大地图居中
+	// 大地圖置中
 	wordMapX = (m_nGameWidth - 666) / 2;
 	wordMapY = (m_nGameHeight - 524) / 2;
 	Memory::CodeCave(wordMapUIcc, 0x009EB594, 13);
