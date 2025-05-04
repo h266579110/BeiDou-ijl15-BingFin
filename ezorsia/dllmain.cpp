@@ -20,36 +20,61 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	{
 		//CreateConsole();	//console for devs, use this to log stuff if you want
 
+		Client::MsgAmount = 26;
+		Client::CustomLoginFrame = true;
+		Memory::UseVirtuProtect = true;
+		Client::setDamageCap = 9999999;
+		Client::setMAtkCap = 9999999;
+		Client::setAccCap = 9999;
+		Client::setAvdCap = 9999;
+		Client::setAtkOutCap = 1999999999;
+		Client::useTubi = true;
+		Client::bigLoginFrame = true;
+		Client::SwitchChinese = true;
+		Client::speedMovementCap = 160;
+		Client::jumpCap = 123;
+		Client::debug = false;
+		Client::noPassword = false;
+		ownLoginFrame = false;
+		ownCashShopFrame = false;
+		EzorsiaV2WzIncluded = true;
+		Client::ServerIP_AddressFromINI = "114.32.118.121";
+		Client::serverIP_Port = 8484;
+		Client::climbSpeedAuto = true;
+		Client::climbSpeed = 1.0;
+		Client::talkRepeat = false;
+		Client::talkTime = 2000;
+
 		INIReader reader("config.ini");
 		if (reader.ParseError() == 0) {
 			Client::m_nGameWidth = reader.GetInteger("general", "width", 1280);
 			Client::m_nGameHeight = reader.GetInteger("general", "height", 720);
-			Client::MsgAmount = reader.GetInteger("general", "MsgAmount", 26);
-			Client::CustomLoginFrame = reader.GetBoolean("general", "CustomLoginFrame", true);
+			//Client::MsgAmount = reader.GetInteger("general", "MsgAmount", 26);
+			//Client::CustomLoginFrame = reader.GetBoolean("general", "CustomLoginFrame", true);
 			Client::WindowedMode = reader.GetBoolean("general", "WindowedMode", true);
-			Client::RemoveLogos = reader.GetBoolean("general", "RemoveLogos", true);
-			Memory::UseVirtuProtect = reader.GetBoolean("general", "UseVirtuProtect", true);
-			Client::setDamageCap = reader.GetInteger("optional", "setDamageCap", 199999);
-			Client::setMAtkCap = reader.GetInteger("optional", "setMAtkCap", 1999);
-			Client::setAccCap = reader.GetInteger("optional", "setAccCap", 999);
-			Client::setAvdCap = reader.GetInteger("optional", "setAvdCap", 999);
-			Client::setAtkOutCap = reader.GetInteger("optional", "setAtkOutCap", 199999);
-			Client::useTubi = reader.GetBoolean("optional", "useTubi", false);
-			Client::bigLoginFrame = reader.GetBoolean("general", "bigLoginFrame", false);
-			Client::SwitchChinese = reader.GetBoolean("general", "SwitchChinese", false);
-			Client::speedMovementCap = reader.GetInteger("optional", "speedMovementCap", 140);
-			Client::jumpCap = reader.GetInteger("optional", "jumpCap", 123);
-			Client::debug = reader.GetBoolean("debug", "debug", false);
-			Client::noPassword = reader.GetBoolean("debug", "noPassword", false);
-			ownLoginFrame = reader.GetBoolean("optional", "ownLoginFrame", false);
-			ownCashShopFrame = reader.GetBoolean("optional", "ownCashShopFrame", false);
-			EzorsiaV2WzIncluded = reader.GetBoolean("general", "EzorsiaV2WzIncluded", true);
-			Client::ServerIP_AddressFromINI = reader.Get("general", "ServerIP_Address", "127.0.0.1");
-			Client::serverIP_Port = reader.GetInteger("general", "serverIP_Port", 8484);
-			Client::climbSpeedAuto = reader.GetBoolean("optional", "climbSpeedAuto", false);
-			Client::climbSpeed = reader.GetFloat("optional", "climbSpeed", 1.0);
-			Client::talkRepeat = reader.GetBoolean("optional", "talkRepeat", false);
-			Client::talkTime = reader.GetInteger("optional", "talkTime", 2000);
+			Client::RemoveLogos = reader.GetBoolean("general", "RemoveLogos", false);
+			//Memory::UseVirtuProtect = reader.GetBoolean("general", "UseVirtuProtect", true);
+			//Client::setDamageCap = reader.GetInteger("optional", "setDamageCap", 199999);
+			//Client::setMAtkCap = reader.GetInteger("optional", "setMAtkCap", 1999);
+			//Client::setAccCap = reader.GetInteger("optional", "setAccCap", 999);
+			//Client::setAvdCap = reader.GetInteger("optional", "setAvdCap", 999);
+			//Client::setAtkOutCap = reader.GetInteger("optional", "setAtkOutCap", 199999);
+			//Client::useTubi = reader.GetBoolean("optional", "useTubi", false);
+			//Client::bigLoginFrame = reader.GetBoolean("general", "bigLoginFrame", false);
+			//Client::SwitchChinese = reader.GetBoolean("general", "SwitchChinese", false);
+			//Client::speedMovementCap = reader.GetInteger("optional", "speedMovementCap", 140);
+			//Client::jumpCap = reader.GetInteger("optional", "jumpCap", 123);
+			//Client::debug = reader.GetBoolean("debug", "debug", false);
+			//Client::noPassword = reader.GetBoolean("debug", "noPassword", false);
+			//ownLoginFrame = reader.GetBoolean("optional", "ownLoginFrame", false);
+			//ownCashShopFrame = reader.GetBoolean("optional", "ownCashShopFrame", false);
+			//EzorsiaV2WzIncluded = reader.GetBoolean("general", "EzorsiaV2WzIncluded", true);
+			//Client::ServerIP_AddressFromINI = reader.Get("general", "ServerIP_Address", "127.0.0.1");
+			//Client::serverIP_Port = reader.GetInteger("general", "serverIP_Port", 8484);
+			//Client::climbSpeedAuto = reader.GetBoolean("optional", "climbSpeedAuto", false);
+			//Client::climbSpeed = reader.GetFloat("optional", "climbSpeed", 1.0);
+			//Client::talkRepeat = reader.GetBoolean("optional", "talkRepeat", false);
+			//Client::talkTime = reader.GetInteger("optional", "talkTime", 2000);
 		}
 
 		Hook_CreateMutexA(true); //multiclient //ty darter, angel, and alias!
