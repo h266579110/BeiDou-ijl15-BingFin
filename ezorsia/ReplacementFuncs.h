@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "AutoTypes.h"
 
 static bool ownLoginFrame;
@@ -996,7 +996,7 @@ KeyValuePair newKeyValuePairs[] = {
     {941, "請選擇...."},
     {942, "男"},
     {943, "女"},
-    {1163, "MapleStory"},
+    {1163, "CrazyMS"},
     {1369, "您所選擇的遊戲區人數較多，建議您選擇其他區創建角色或進行遊戲"},
     {1370, "您所選擇的遊戲區已經人滿，請您選擇其他區創建角色或進行遊戲"},
     {1392, "廣告窗被關掉。"},
