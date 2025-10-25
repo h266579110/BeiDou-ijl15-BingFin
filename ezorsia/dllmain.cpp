@@ -6,6 +6,7 @@
 #include "ReplacementFuncs.h"
 #include <comutil.h>
 #include "BossHP.h"
+#include "CMapTransferExpand.h"
 
 void CreateConsole() {
 	AllocConsole();
@@ -20,18 +21,18 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	{
 		//CreateConsole();	//console for devs, use this to log stuff if you want
 
-		Client::MsgAmount = 26;
+		Client::MsgAmount = 20;
 		Client::CustomLoginFrame = true;
 		Memory::UseVirtuProtect = true;
-		Client::setDamageCap = 9999999;
-		Client::setMAtkCap = 9999999;
-		Client::setAccCap = 9999;
-		Client::setAvdCap = 9999;
-		Client::setAtkOutCap = 1999999999;
+		Client::setDamageCap = 2147483646;
+		Client::setMAtkCap = 2147483646;
+		Client::setAccCap = 1000;
+		Client::setAvdCap = 1000;
+		Client::setAtkOutCap = 2147483646;
 		Client::useTubi = true;
 		Client::bigLoginFrame = true;
 		Client::SwitchChinese = true;
-		Client::speedMovementCap = 160;
+		Client::speedMovementCap = 140;
 		Client::jumpCap = 123;
 		Client::debug = false;
 		Client::noPassword = false;
@@ -110,7 +111,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 		Client::NoPassword();
 		Client::MoreHook();
 		BossHP::Hook();
+		CMapTransferExpand::Expand();
 		Client::WorldMap();
+		Client::ExpandedItem();
 		std::cout << "GetModuleFileName hook created" << std::endl;
 		ijl15::CreateHook(); //NMCO::CreateHook();
 		std::cout << "NMCO hook initialized" << std::endl;
