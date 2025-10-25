@@ -3,7 +3,6 @@
 #include "codecaves.h"
 #include "ConvertUTF8.h"
 #include "FixBuddy.h"
-#include "ExpandedItem.h"
 
 int Client::m_nGameHeight = 720;
 int Client::m_nGameWidth = 1280;
@@ -895,6 +894,8 @@ void Client::NoPassword() {
 void Client::MoreHook() {
 	// 解除美髮與整形限制，可套用新版
 	Memory::CodeCave(faceHairCave, 0x005C94F3, 18);
+
+	// 承上，解除NPC對話限制
 	Memory::CodeCave(faceHairCave2, 0x009ACA9B, 5);
 	Memory::CodeCave(faceHairCave3, 0x009ACAA6, 6);
 
@@ -902,15 +903,13 @@ void Client::MoreHook() {
 	Memory::WriteByte(0x005F12EF + 2, 0x05);
 
 	// 未知功能
-	Memory::CodeCave(canSendPkgTimeCave, 0x00485C28, 10);
+	//Memory::CodeCave(canSendPkgTimeCave, 0x00485C28, 10);
 
-	// 聊天冷卻時間
 	if (talkRepeat) {
 		Memory::WriteByte(0x004905ED + 1, 5);
 	}
 	Memory::WriteInt(0x0049064B + 2, talkTime);
 
-	// 調整數值位置
 	if (setAtkOutCap > 999999) {
 		Memory::WriteInt(0x008C485A + 1, 192); // 面板關閉按鈕x
 		Memory::WriteInt(0x008C4AB3 + 1, 210); // 面板寬度
@@ -922,16 +921,6 @@ void Client::MoreHook() {
 		Memory::WriteInt(0x008C6C72 + 1, 210); // 移動時詳細面板x
 		Memory::CodeCave(apDetailBtn, 0x008C4E1B, 7); // 詳細按钮
 	}
-
-	// 防止寵物撿拾物品影響過傳點 (Super Tubi)
-	Memory::PatchNop(0x00485C01, 2);
-	Memory::PatchNop(0x00485C21, 2);
-	Memory::PatchNop(0x00485C32, 2);
-
-	// 商店支援出售商城道具
-	Memory::WriteByte(0x00755DC2, 0x7D);
-	Memory::PatchNop(0x007544E2, 6);
-	Memory::PatchNop(0x007544EE, 6);
 
 	// 喇叭
 	Memory::WriteInt(0x0045A5BE + 1, 9999);
@@ -947,9 +936,6 @@ void Client::MoreHook() {
 
 	// 空中瞬移
 	Memory::FillBytes(0x00957C2D, 0x90, 6);
-
-	// 究極突刺無須目標即可使用
-	Memory::WriteByte(0x00951347 + 1, 0x1C);
 
 	// 移除近戰距離 (如弓箭手或槍手)
 	Memory::WriteByteArray(0x009516C2, no_wack_array, sizeof(no_wack_array));
@@ -978,30 +964,4 @@ void Client::WorldMap() {
 	wordMapX = (m_nGameWidth - 666) / 2;
 	wordMapY = (m_nGameHeight - 524) / 2;
 	Memory::CodeCave(wordMapUIcc, 0x009EB594, 13);
-}
-
-void Client::ExpandedItem()
-{
-	//物品欄上限 96 -> 192 slots
-	Memory::WriteInt(CUIItemHeight + 1, newFullItemHeight);
-	Memory::WriteInt(CUIItemExpandItemHeight + 1, newFullItemHeight);
-	Memory::WriteInt(CUIItemBtCashShopPosY + 1, 0x10A + diffFullItemHeight);
-	Memory::WriteInt(COnPacketItemSort2_DecodeSize + 1, 0xFFA05AE5);
-	Memory::WriteByte(COnPacketItemSort2_DecodeSize + 6, 0xB7);
-	Memory::CodeCave(getItemSlotRectNew, getItemSlotRectNewAddress, 5);
-	Memory::CodeCave(itemSlotLimitExpandedA, itemSlotLimitExpandedAAddress, 6);
-	Memory::CodeCave(itemSlotLimitExpandedB, itemSlotLimitExpandedBAddress, 7);
-	Memory::CodeCave(itemSlotLimitExpandedC, itemSlotLimitExpandedCAddress, 5);
-	Memory::CodeCave(itemSlotLimitExpandedD1, itemSlotLimitExpandedD1Address, 6);
-	Memory::CodeCave(itemSlotLimitExpandedD2, itemSlotLimitExpandedD2Address, 6);
-	Memory::CodeCave(itemSlotLimitExpandedD3, itemSlotLimitExpandedD3Address, 6);
-	Memory::CodeCave(itemSlotLimitExpandedD4, itemSlotLimitExpandedD4Address, 6);
-	Memory::CodeCave(itemSlotLimitExpandedE, itemSlotLimitExpandedEAddress, 5);
-	Memory::CodeCave(itemSlotLimitExpandedF, itemSlotLimitExpandedFAddress, 5);
-	Memory::CodeCave(itemSlotLimitExpandedG, itemSlotLimitExpandedGAddress, 5);
-	Memory::CodeCave(itemSlotLimitExpandedH, itemSlotLimitExpandedHAddress, 5);
-	Memory::CodeCave(itemSlotLimitExpandedI, itemSlotLimitExpandedIAddress, 6);
-	Memory::CodeCave(updateItemSlotRectVal, updateItemSlotRectValAddress, 13);
-	Memory::CodeCave(CUIItemCoinPosY, CUIItemCoinPosYAddress, 5);
-	Memory::CodeCave(CUIItemBtCoinPosY, CUIItemBtCoinPosYAddress, 5);
 }

@@ -147,12 +147,6 @@
     <ClInclude Include="ConvertUTF8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CMapTransferExpand.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ExpandedItem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -180,9 +174,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ConvertUTF8.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CMapTransferExpand.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
