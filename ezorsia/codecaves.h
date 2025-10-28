@@ -1767,6 +1767,9 @@ __declspec(naked) void getItemSlotRectNew()
 		push ecx
 		pushad
 		pushfd
+		mov[isItemSlotIDover96], 0
+		cmp[ecx + 604h], 0
+		jz skip_sub
 		mov eax, [ebp + 8]
 		cmp eax, 60h
 		setg byte ptr[isItemSlotIDover96]

@@ -31,20 +31,22 @@ bool HookGetModuleFileName(bool bEnable) {
 	return Memory::SetHook(bEnable, reinterpret_cast<void**>(&_GetModuleFileNameW), GetModuleFileNameW_Hook);
 }
 
+//////// 原版 ////////
 /// <summary>
 /// Creates a detour for the User32.dll CreateWindowExA function applying the following changes:
 /// 1. Enable the window minimize box
 /// </summary>
-inline void HookCreateWindowExA(bool bEnable) {
-	static auto create_window_ex_a = decltype(&CreateWindowExA)(GetProcAddress(LoadLibraryA("USER32"), "CreateWindowExA"));
-	static const decltype(&CreateWindowExA) hook = [](DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam) -> HWND {
-		dwStyle |= WS_MINIMIZEBOX; // enable minimize button
-        x = (GetSystemMetrics(SM_CXSCREEN) - nWidth) / 2;
-        y = (GetSystemMetrics(SM_CYSCREEN) - nHeight) / 4;
-		return create_window_ex_a(dwExStyle, lpClassName, lpWindowName, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
-	};
-	Memory::SetHook(bEnable, reinterpret_cast<void**>(&create_window_ex_a), hook);
-}
+//inline void HookCreateWindowExA(bool bEnable) {
+//	static auto create_window_ex_a = decltype(&CreateWindowExA)(GetProcAddress(LoadLibraryA("USER32"), "CreateWindowExA"));
+//	static const decltype(&CreateWindowExA) hook = [](DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam) -> HWND {
+//		dwStyle |= WS_MINIMIZEBOX; // enable minimize button
+//        x = (GetSystemMetrics(SM_CXSCREEN) - nWidth) / 2;
+//        y = (GetSystemMetrics(SM_CYSCREEN) - nHeight) / 4;
+//		return create_window_ex_a(dwExStyle, lpClassName, lpWindowName, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+//	};
+//	Memory::SetHook(bEnable, reinterpret_cast<void**>(&create_window_ex_a), hook);
+//}
+//////// 原版 End ////////
 
 DWORD GetFuncAddress(LPCSTR lpModule, LPCSTR lpFunc)	//ty alias!			//multiclient, not currently working, likely cannot hook early enough with nmconew.dll
 {
@@ -68,6 +70,282 @@ DWORD GetFuncAddress(LPCSTR lpModule, LPCSTR lpFunc)	//ty alias!			//multiclient
 
 	return address;
 }
+
+//////// 開啟無邊框全螢幕模式及縮小視窗 ////////
+typedef decltype(&CreateWindowExA) CreateWindowExA_t;
+static CreateWindowExA_t CreateWindowExA_orig;
+static WNDPROC g_WndProc;
+
+// Function to block user input
+void BlockUserInput(bool block) {
+    BlockInput(block);
+}
+
+// Modified maximize handler with input blocking
+// Function to change the screen resolution of a specific monitor
+void ChangeScreenResolutionForMonitor(HMONITOR hMonitor, int width, int height) {
+    MONITORINFOEX mi;
+    mi.cbSize = sizeof(MONITORINFOEX);
+    if (GetMonitorInfo(hMonitor, &mi)) {
+        DEVMODE dm;
+        memset(&dm, 0, sizeof(dm));
+        dm.dmSize = sizeof(dm);
+        dm.dmPelsWidth = width;
+        dm.dmPelsHeight = height;
+        dm.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
+
+        // Use the display device name of the specific monitor
+        LONG result = ChangeDisplaySettingsEx(mi.szDevice, &dm, NULL, CDS_FULLSCREEN, NULL);
+        if (result != DISP_CHANGE_SUCCESSFUL) {
+            MessageBox(NULL, L"Failed to change screen resolution.", L"Error", MB_OK | MB_ICONERROR);
+        }
+    }
+}
+
+// Modified ToggleFullscreen function to handle screen-specific resolution change
+bool g_isFullscreen = false;  // 全域變數，記錄當前狀態
+void ToggleFullscreen(HWND hWnd) {
+    static WINDOWPLACEMENT wpPrev = { sizeof(wpPrev) };
+    DWORD dwStyle = GetWindowLong(hWnd, GWL_STYLE);
+
+    // Block user input while the code is running
+    BlockUserInput(true);
+
+    if (!g_isFullscreen) {
+        MONITORINFO mi = { sizeof(mi) };
+        HMONITOR hMonitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
+
+        if (GetWindowPlacement(hWnd, &wpPrev) &&
+            GetMonitorInfo(hMonitor, &mi)) {
+
+            // Change the resolution of the specific monitor the window is on
+            ChangeScreenResolutionForMonitor(hMonitor, Client::m_nGameWidth, Client::m_nGameHeight);
+
+            // Set a timer to delay the window adjustments
+            SetTimer(hWnd, 1, 300, NULL); // 100ms delay for demonstration
+        }
+        g_isFullscreen = true;
+    } else {
+        SetWindowLong(hWnd, GWL_STYLE, dwStyle | WS_OVERLAPPEDWINDOW);
+        SetWindowPlacement(hWnd, &wpPrev);
+        SetWindowPos(hWnd, NULL, 0, 0, 0, 0,
+            SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+            SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+        g_isFullscreen = false;
+
+        // Restore the original screen resolution (optional)
+        ChangeDisplaySettings(NULL, 0);
+    }
+
+    // After the operation, unblock user input
+    BlockUserInput(false);
+}
+
+// Timer callback to handle delayed window adjustments
+void CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime) {
+    // Remove the timer
+    KillTimer(hWnd, idEvent);
+
+    // Perform window adjustments
+    DWORD dwStyle = GetWindowLong(hWnd, GWL_STYLE);
+    MONITORINFO mi = { sizeof(mi) };
+    GetMonitorInfo(MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY), &mi);
+
+    // Keep WS_SYSMENU, WS_MINIMIZEBOX, and WS_MAXIMIZEBOX
+    SetWindowLong(hWnd, GWL_STYLE, dwStyle & ~(WS_OVERLAPPEDWINDOW & ~WS_SYSMENU & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX));
+    SetWindowPos(hWnd, HWND_TOP,
+        mi.rcMonitor.left, mi.rcMonitor.top,
+        mi.rcMonitor.right - mi.rcMonitor.left,
+        mi.rcMonitor.bottom - mi.rcMonitor.top,
+        SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+
+    // Unblock input after window adjustment
+    BlockUserInput(false);
+}
+
+
+LRESULT WndProc_hook(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
+    static POINT ptOffset;
+    static bool bMoving;
+    const int SNAP_DISTANCE = 10;         // Distance within which the window snaps to the screen edges
+    const int OVERRIDE_DISTANCE = 5;     // Distance to push beyond the snap to override it
+
+    switch (Msg) {
+
+    case WM_TIMER:
+        if (wParam == 1) {
+            TimerProc(hWnd, Msg, wParam, lParam);
+        }
+        break;
+    case WM_NCMOUSEMOVE:
+    case WM_SETCURSOR:
+        switch (LOWORD(lParam)) {
+        case HTCAPTION:
+        case HTCLOSE:
+        case HTMINBUTTON:
+        case HTMAXBUTTON:
+        case HTSYSMENU:
+            // Force cursor to show over the title bar and system buttons
+            ShowCursor(TRUE);
+            SetCursor(LoadCursor(NULL, IDC_ARROW));
+            return TRUE;
+        default:
+            break;
+        }
+        break;
+    case WM_MOUSEMOVE:
+        if (bMoving) {
+            if (GetAsyncKeyState(VK_LBUTTON) & 0x8000) {
+                POINT ptCursor;
+                GetCursorPos(&ptCursor);
+                int x = ptCursor.x - ptOffset.x;
+                int y = ptCursor.y - ptOffset.y;
+
+                // Get screen dimensions
+                RECT screenRect;
+                GetWindowRect(GetDesktopWindow(), &screenRect);
+
+                // Get window dimensions
+                RECT windowRect;
+                GetWindowRect(hWnd, &windowRect);
+                int windowWidth = windowRect.right - windowRect.left;
+                int windowHeight = windowRect.bottom - windowRect.top;
+
+                // Check for snapping conditions
+                bool snapped = false;
+
+                // Snap to the left edge
+                if (x < SNAP_DISTANCE && x > -OVERRIDE_DISTANCE) {
+                    x = -2;
+                    snapped = true;
+                }
+
+                // Snap to the right edge
+                if (x + windowWidth > screenRect.right - SNAP_DISTANCE &&
+                    x + windowWidth < screenRect.right + OVERRIDE_DISTANCE) {
+                    x = screenRect.right - windowWidth + 2;
+                    snapped = true;
+                }
+
+                // Snap to the top edge
+                if (y < SNAP_DISTANCE && y > -OVERRIDE_DISTANCE) {
+                    y = 0;
+                    snapped = true;
+                }
+
+                // Snap to the bottom edge
+                if (y + windowHeight > screenRect.bottom - SNAP_DISTANCE &&
+                    y + windowHeight < screenRect.bottom + OVERRIDE_DISTANCE) {
+                    y = screenRect.bottom - windowHeight;
+                    snapped = true;
+                }
+
+                // Only set the position if the window is snapped
+                if (snapped) {
+                    SetWindowPos(hWnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+                }
+                else {
+                    // If not snapped, move freely
+                    SetWindowPos(hWnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+                }
+            }
+            else {
+                bMoving = false;
+                ReleaseCapture();
+            }
+        }
+        break;
+    case WM_NCLBUTTONDOWN:
+        if (wParam == HTMENU || wParam == HTLEFT) {
+            break;
+        }
+        else if (wParam == HTCAPTION) {
+            RECT rcWnd;
+            POINT ptCursor;
+            GetWindowRect(hWnd, &rcWnd);
+            GetCursorPos(&ptCursor);
+            ptOffset.x = ptCursor.x - rcWnd.left;
+            ptOffset.y = ptCursor.y - rcWnd.top;
+            SetCapture(hWnd);
+            bMoving = true;
+        }
+        return 0;
+    case WM_NCLBUTTONUP:
+    case WM_LBUTTONUP:
+        if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+            break;
+        }
+        if (wParam == HTCLOSE) {
+            PostQuitMessage(0);
+        }
+        else if (wParam == HTMINBUTTON) {
+            ShowWindow(hWnd, SW_MINIMIZE);
+        }
+        else if (wParam == HTMAXBUTTON) {
+            ToggleFullscreen(hWnd);
+        }
+        bMoving = false;
+        ReleaseCapture();
+        break;
+    case WM_NCRBUTTONDOWN:
+    case WM_NCRBUTTONUP:
+        return 0;
+    case WM_RBUTTONUP:
+        if (!bMoving) {
+            break;
+        }
+        return 0;
+    case WM_SYSKEYDOWN: // Alt 組合鍵
+        if (wParam == VK_RETURN) {
+            ToggleFullscreen(hWnd);
+            return 0; // 攔截系統預設的 Alt+Enter 行為
+        }
+        break;
+    }
+    return CallWindowProcA(g_WndProc, hWnd, Msg, wParam, lParam);
+}
+
+/// <summary>
+/// Creates a detour for the User32.dll CreateWindowExA function applying the following changes:
+/// 1. Enable the window minimize box
+/// </summary>
+CreateWindowExA_t CreateWindowExA_Original = (CreateWindowExA_t)GetFuncAddress("USER32", "CreateWindowExA");
+bool HookCreateWindowExA_initialized = true;
+HWND WINAPI CreateWindowExA_Hook(DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam) {
+    if (HookCreateWindowExA_initialized) {
+        std::cout << "HookCreateWindowExA started" << std::endl;
+        HookCreateWindowExA_initialized = false;
+    }
+    if (strstr(lpClassName, "MapleStoryClass")) {
+        dwStyle |= WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU; // ensure minimize and maximize buttons
+		// Center the window on the screen
+        X = (GetSystemMetrics(SM_CXSCREEN) - nWidth) / 2;
+        Y = (GetSystemMetrics(SM_CYSCREEN) - nHeight) / 4;
+
+        HWND ret = CreateWindowExA_Original(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+
+        // Load icon
+        HICON hIcon = (HICON)LoadImageA(NULL, "icon.ico", IMAGE_ICON, 64, 64, LR_LOADFROMFILE);
+        if (hIcon) {
+            // Set window icons
+            SendMessageA(ret, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+            SendMessageA(ret, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+        }
+        g_WndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(ret, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&WndProc_hook)));
+        return ret;
+    }
+    else if (strstr(lpClassName, "StartUpDlgClass")) {
+        return NULL; //kill startup balloon
+    }
+
+    HWND ret = CreateWindowExA_Original(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+    return ret;
+}
+
+inline bool Hook_CreateWindowExA(bool bEnable) {
+    return Memory::SetHook(bEnable, reinterpret_cast<void**>(&CreateWindowExA_Original), CreateWindowExA_Hook);
+}
+//////// 開啟無邊框全螢幕模式及縮小視窗 End ////////
 
 bool Hook_CreateMutexA(bool bEnable)	//ty darter	//ty angel!
 {

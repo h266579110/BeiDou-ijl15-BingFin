@@ -7,11 +7,94 @@
 #include <comutil.h>
 #include "BossHP.h"
 #include "CMapTransferExpand.h"
+#include <tlhelp32.h>
 
 void CreateConsole() {
 	AllocConsole();
 	FILE* stream;
 	freopen_s(&stream, "CONOUT$", "w", stdout); //CONOUT$
+}
+
+// Detect Cheat Engine
+bool IsCheatEngineRunning() {
+	HWND hwnd = FindWindowW(NULL, L"Cheat Engine");
+	if (hwnd != NULL)
+		return true;
+
+	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (hSnap == INVALID_HANDLE_VALUE) return false;
+
+    PROCESSENTRY32W processEntry;
+    processEntry.dwSize = sizeof(processEntry);
+
+    if (Process32FirstW(hSnap, &processEntry)) {
+		do {
+			std::wstring processName = processEntry.szExeFile;
+			if (processName.find(L"cheatengine") != std::wstring::npos ||
+				processName.find(L"CheatEngine") != std::wstring::npos ||
+				processName.find(L"cheat-engine") != std::wstring::npos ||
+				processName.find(L"Cheat-Engine") != std::wstring::npos ||
+				processName.find(L"artmoney") != std::wstring::npos ||
+				processName.find(L"ArtMoney") != std::wstring::npos ||
+				processName.find(L"art-money") != std::wstring::npos ||
+				processName.find(L"Art-Money") != std::wstring::npos ||
+				processName.find(L"ollydbg") != std::wstring::npos ||
+				processName.find(L"OllyDBG") != std::wstring::npos ||
+				processName.find(L"ollydbg64") != std::wstring::npos ||
+				processName.find(L"OllyDBG64") != std::wstring::npos ||
+				processName.find(L"timelapse") != std::wstring::npos ||
+				processName.find(L"Timelapse") != std::wstring::npos ||
+				processName.find(L"timelapse-trainer") != std::wstring::npos ||
+				processName.find(L"Timelapse-Trainer") != std::wstring::npos ||
+				processName.find(L"extremeinjector") != std::wstring::npos ||
+				processName.find(L"ExtremeInjector") != std::wstring::npos ||
+				processName.find(L"extreme-injector") != std::wstring::npos ||
+				processName.find(L"Extreme-Injector") != std::wstring::npos) {
+				HANDLE cheatEngineHandle = OpenProcess(PROCESS_TERMINATE, FALSE, processEntry.th32ProcessID);
+				if (cheatEngineHandle) {
+					TerminateProcess(cheatEngineHandle, 1);
+					CloseHandle(cheatEngineHandle);
+					return true;
+				}
+			}
+		} while (Process32NextW(hSnap, &processEntry));
+	}
+
+	CloseHandle(hSnap);
+	return false;
+}
+
+static inline void exitProcess() {
+	// System terminate
+	HANDLE hProcess = GetCurrentProcess();
+	TerminateProcess(hProcess, -1);
+	// Or null pointer crash
+	*(int*)nullptr = 1;
+}
+
+DWORD WINAPI debuggerMonitoring(LPVOID lpParam) {
+	while (true) {
+		// CE process detect
+		if (IsCheatEngineRunning()) {
+			exitProcess();
+			return 0;
+		}
+
+		// Check if the current process is being debugged
+		if (IsDebuggerPresent()) {
+			exitProcess();
+			return 0;
+		}
+
+		// Check if a remote debugger is attached to the current process 
+		BOOL isAttached = FALSE;
+		CheckRemoteDebuggerPresent(GetCurrentProcess(), &isAttached);
+		if (isAttached) {
+			exitProcess();
+			return 0;
+		}
+		Sleep(3000);
+	}
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
@@ -79,7 +162,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 		}
 
 		Hook_CreateMutexA(true); //multiclient //ty darter, angel, and alias!
-		HookCreateWindowExA(true); //default ezorsia
+		//HookCreateWindowExA(true); //default ezorsia
+		Hook_CreateWindowExA(true); //Modified
 		HookGetModuleFileName(true); //default ezorsia
 		HookPcCreateObject_IWzResMan(true);
 		HookPcCreateObject_IWzNameSpace(true);
@@ -117,6 +201,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 		std::cout << "GetModuleFileName hook created" << std::endl;
 		ijl15::CreateHook(); //NMCO::CreateHook();
 		std::cout << "NMCO hook initialized" << std::endl;
+
+		// Create AntiCheat thread to monitor Cheat Engine
+		CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)debuggerMonitoring, nullptr, 0, nullptr);
 		break;
 	}
 	default: break;
